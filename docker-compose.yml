@@ -1,0 +1,42 @@
+services:
+  web:
+    build: .
+    container_name: expense_web
+    command: >
+      sh -c "python manage.py migrate &&
+             python manage.py runserver 0.0.0.0:8000"
+    volumes:
+      - .:/app
+    ports:
+      - "8000:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      - DB_NAME=expense_db
+      - DB_USER=expense_user
+      - DB_PASSWORD=expense_pass
+      - DB_HOST=db
+      - DJANGO_SECRET_KEY=django-insecure-dev-key-change-in-production
+      - DJANGO_DEBUG=True
+
+  db:
+    image: postgres:16
+    container_name: expense_db
+    restart: always
+    environment:
+      POSTGRES_DB: expense_db
+      POSTGRES_USER: expense_user
+      POSTGRES_PASSWORD: expense_pass
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U expense_user -d expense_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  postgres_data:

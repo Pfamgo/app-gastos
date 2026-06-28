@@ -1,0 +1,93 @@
+{% extends "core/base.html" %}
+{% block title %}Transacciones - App Gastos{% endblock %}
+
+{% block content %}
+<div class="d-flex flex-column flex-sm-row justify-content-between align-items-start align-items-sm-center gap-2 mb-4">
+    <div>
+        <h1 class="h3 fw-bold text-dark mb-1">Transacciones</h1>
+        <p class="text-muted mb-0">Historial completo de ingresos y gastos</p>
+    </div>
+    <a href="{% url 'transaction_create' %}" class="btn btn-primary">
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" class="me-1" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
+        </svg>
+        Nueva transacción
+    </a>
+</div>
+
+{% if transactions %}
+<div class="card border-0 shadow-sm">
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th class="small fw-semibold text-muted">Fecha</th>
+                    <th class="small fw-semibold text-muted">Tipo</th>
+                    <th class="small fw-semibold text-muted">Categoría</th>
+                    <th class="small fw-semibold text-muted">Descripción</th>
+                    <th class="small fw-semibold text-muted text-end">Monto</th>
+                    <th class="small fw-semibold text-muted text-end">Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for t in transactions %}
+                <tr>
+                    <td class="text-nowrap">{{ t.date|date:"d/m/Y" }}</td>
+                    <td>
+                        {% if t.type == 'expense' %}
+                        <span class="badge bg-danger bg-opacity-10 text-danger">Gasto</span>
+                        {% else %}
+                        <span class="badge bg-success bg-opacity-10 text-success">Ingreso</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ t.category.name|default:"—" }}</td>
+                    <td class="text-muted" style="max-width: 200px;">
+                        <span class="d-inline-block text-truncate" style="max-width: 100%;">
+                            {{ t.description|default:"—" }}
+                        </span>
+                    </td>
+                    <td class="text-end fw-bold {% if t.type == 'expense' %}text-danger{% else %}text-success{% endif %}">
+                        {% if t.type == 'expense' %}-{% else %}+{% endif %}${{ t.amount|floatformat:2 }}
+                    </td>
+                    <td class="text-end text-nowrap">
+                        <a href="{% url 'transaction_edit' t.pk %}" class="btn btn-sm btn-outline-primary me-1">
+                            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" class="me-1" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                            </svg>
+                            Editar
+                        </a>
+                        <form method="post" action="{% url 'transaction_delete' t.pk %}" class="d-inline">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-sm btn-outline-danger"
+                                    onclick="return confirm('¿Eliminar esta transacción?')">
+                                <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" class="me-1" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                                </svg>
+                                Eliminar
+                            </button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% else %}
+<div class="card border-0 shadow-sm">
+    <div class="card-body text-center py-5">
+        <svg width="80" height="80" fill="none" stroke="currentColor" stroke-width="1.5" class="text-muted mb-3" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+        </svg>
+        <h5 class="fw-bold text-dark mb-2">No hay transacciones</h5>
+        <p class="text-muted mb-4">Comienza registrando tu primer ingreso o gasto</p>
+        <a href="{% url 'transaction_create' %}" class="btn btn-primary">
+            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" class="me-1" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
+            </svg>
+            Registrar transacción
+        </a>
+    </div>
+</div>
+{% endif %}
+{% endblock %}
